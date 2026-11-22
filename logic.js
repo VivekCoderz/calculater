@@ -41,8 +41,14 @@ buttons.forEach((button) => {
         display.value = expression;
         break;
         case '=':
+          if (expression === '') break; // nothing to calculate
           try {
-            result = eval(expression);
+            // Strip leading zeros (e.g. "010"), otherwise eval treats them as octal: 010 -> 8
+            const cleaned = expression.replace(/(^|[^\d.])0+(?=\d)/g, '$1');
+            result = eval(cleaned);
+            if (!isFinite(result)) throw new Error('Not a finite number');
+            // Round away floating point noise: 0.1 + 0.2 -> 0.3
+            result = parseFloat(result.toFixed(10));
             display.value = result;
             expression = result.toString();
           } catch (error) {
@@ -52,7 +58,6 @@ buttons.forEach((button) => {
         break;
       default:
         expression = expression +  value;
-        console.log(expression);
         display.value = expression;
       }
     });
